@@ -11,32 +11,54 @@ import QuartzCore
 import SceneKit
 
 class GameViewController: UIViewController {
-
+	
+	var scnView:SCNView!;
+	var scnScene:SCNScene!;
+	var cameraNode:SCNNode!;
+	
     override func viewDidLoad() {
         super.viewDidLoad()
-			//create new scene
-		let mainScene = MainScene(named:"")!;
-		
-		//create and add a camera to scene
-		let cameraNode = SCNNode();
-		cameraNode.camera = SCNCamera();
-		mainScene.rootNode.addChildNode(cameraNode);
-		
-		//place the camera
-		cameraNode.position = SCNVector3(x:0,y:0,z:15);
-		
-		//create and add a light to the scene
-		let lightNode = SCNNode();
-		lightNode.light = SCNLight();
-		lightNode.light?.type = .ambient;
-		lightNode.light?.color = UIColor.green;
-		mainScene.rootNode.addChildNode(lightNode);
-		
-		
-		
+		setupView();
+		setupScene();
+		setupCamera();
+		spawnShape();
 	}
 	
-    
+	func setupView(){
+		scnView = self.view as! SCNView;
+		scnView.showsStatistics = true;
+		scnView.allowsCameraControl = true;
+		scnView.autoenablesDefaultLighting = true;
+	}
+	func setupScene(){
+		scnScene = SCNScene();
+		scnView.scene = scnScene;
+		scnScene.background.contents = "GeometryFighter.scnassets/Textures/Background_Diffuse.png";
+	}
+	func setupCamera(){
+		cameraNode = SCNNode();
+		cameraNode.camera = SCNCamera();
+		cameraNode.position = SCNVector3(x:0,y:0,z:10);
+		scnScene.rootNode.addChildNode(cameraNode);
+	}
+	
+	func spawnShape() -> Void {
+		var geometry:SCNGeometry;
+		switch ShapeType.random() {
+		default:
+			geometry = SCNBox(width: 1.0, height: 1.0, length: 1.0, chamferRadius: 0.0);
+		}
+		let geometryNode = SCNNode(geometry: geometry);
+		scnScene.rootNode.addChildNode(geometryNode);
+		geometryNode.physicsBody = SCNPhysicsBody(type:.dynamic, shape: nil);
+		let randomX:Float = -1.0;
+		let randomY:Float = 15.0;
+		let force = SCNVector3(x:randomX,y:randomY,z:0);
+		let position = SCNVector3(x:0.05,y:0.05,z:0.05);
+		geometryNode.physicsBody?.applyForce(force, at: position, asImpulse: true);
+
+	}
+	
     override var shouldAutorotate: Bool {
         return true
     }
