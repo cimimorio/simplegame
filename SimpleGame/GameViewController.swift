@@ -10,11 +10,12 @@ import UIKit
 import QuartzCore
 import SceneKit
 
-class GameViewController: UIViewController {
+class GameViewController: UIViewController{
 	
 	var scnView:SCNView!;
 	var scnScene:SCNScene!;
 	var cameraNode:SCNNode!;
+	var spawnTime:TimeInterval = 0;
 	
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,8 @@ class GameViewController: UIViewController {
 		scnView.showsStatistics = true;
 		scnView.allowsCameraControl = true;
 		scnView.autoenablesDefaultLighting = true;
+		scnView.delegate = self;
+		scnView.isPlaying = true;
 	}
 	func setupScene(){
 		scnScene = SCNScene();
@@ -38,7 +41,7 @@ class GameViewController: UIViewController {
 	func setupCamera(){
 		cameraNode = SCNNode();
 		cameraNode.camera = SCNCamera();
-		cameraNode.position = SCNVector3(x:0,y:0,z:10);
+		cameraNode.position = SCNVector3(x:0,y:5,z:10);
 		scnScene.rootNode.addChildNode(cameraNode);
 	}
 	
@@ -59,6 +62,14 @@ class GameViewController: UIViewController {
 
 	}
 	
+	func cleanNode() -> Void {
+		for node in scnScene.rootNode.childNodes {
+			if node.position.y < -2 {
+				node.removeFromParentNode();
+			}
+		}
+	}
+	
     override var shouldAutorotate: Bool {
         return true
     }
@@ -66,12 +77,24 @@ class GameViewController: UIViewController {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
-	
-    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Release any cached data, images, etc that aren't in use.
     }
 
 }
+
+extension GameViewController:SCNSceneRendererDelegate{
+	func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+		if time > spawnTime {
+			spawnShape();
+			cleanNode();
+			// 2
+			spawnTime = time + TimeInterval(2.0);
+		}
+		
+	}
+}
+
+
+
